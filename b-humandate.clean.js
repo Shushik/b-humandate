@@ -172,7 +172,7 @@
             cnow  = HumanDate.parse(now),
             data  = [];
 
-        //
+        // Fill the variables
         month = cnow.getMonth();
         year  = cnow.getFullYear();
         last  = HumanDate.days(month, year);
@@ -182,18 +182,18 @@
 
         rest -= last;
 
-        //
+        // Get a first day in range
         if (from !== 1) {
             from = -from + (7 - from);
             rest += from;
         }
 
-        //
+        // Get a last day in range
         if (rest > 0) {
             till = last + rest;
         }
 
-        //
+        // Generate an array with the dates in range
         for (pos = from; pos < till; pos++) {
             data.push(new Date(year, month, pos));
         }
@@ -769,39 +769,37 @@
             sals = '',
             def  = HumanDate._locales[HumanDate._locales.def];
 
-        // Create the parent object if not exists
-        if (!HumanDate._locales[lang]) {
-            HumanDate._locales[lang] = {};
-        }
+        if (items !== undefined) {
+            def = HumanDate._locales[HumanDate._locales.def];
 
-        //
-        for (als in def) {
-            HumanDate._locales[lang][als] = {};
+            // Create the parent object if not exists
+            if (!HumanDate._locales[lang]) {
+                HumanDate._locales[lang] = {};
+            }
 
             //
-            for (sals in def[als]) {
-                if (items && items[als] && items[als][sals]) {
-                    if (items[als][sals] instanceof Array) {
-                        HumanDate._locales[lang][als][sals] = items[als][sals].join(HumanDate._sep);
+            for (als in def) {
+                HumanDate._locales[lang][als] = {};
+
+                //
+                for (sals in def[als]) {
+                    if (items && items[als] && items[als][sals]) {
+                        if (items[als][sals] instanceof Array) {
+                            HumanDate._locales[lang][als][sals] = items[als][sals].join(HumanDate._sep);
+                        } else {
+                            HumanDate._locales[lang][als][sals] = items[als][sals];
+                        }
                     } else {
-                        HumanDate._locales[lang][als][sals] = items[als][sals];
+                        HumanDate._locales[lang][als][sals] = def[als][sals];
                     }
-                } else {
-                    HumanDate._locales[lang][als][sals] = def[als][sals];
                 }
             }
         }
-    }
 
-/**
- * Prefill the default formats
- */
-;(function() {
-    var
-        pos = 0,
-        arr = 'D M d Y H:i:s eO \(T\);D M d Y H:i:s eO;D M d H:i:s e Y;Y-m-d H:i:s;H:i:s;Y-m-d;y-m-d;M d,Y;Y-M-d;y-M-d;d-M-Y;M/d/y;m-d-Y;m.d.Y;d/m/Y;d-m-Y;d.m.Y;M d, Y;M d;M-d;m/d;m-d;d-M;d/m;d-m;d'.split(HumanDate._sep);
-
-    for (pos in arr) {
-        HumanDate.format(arr[pos]);
+        // Switch to a given language
+        if (HumanDate._locales[lang]) {
+            HumanDate._locales.curr = lang;
+        } else {
+            HumanDate._locales.curr = HumanDate._locales.def;
+        }
     }
-})();
