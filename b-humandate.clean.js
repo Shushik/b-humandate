@@ -90,6 +90,11 @@
             years : {
                 plur : 'year;years;years'
             },
+            common : {
+                bwd  : 'Go back',
+                fwd  : 'Go forward',
+                hide : 'hide'
+            },
             monthes : {
                 decl : 'of January;of February;of March;of April;of May;of June;of July;of August;of September;of October;of November;of December',
                 full : 'January;February;March;April;May;June;July;August;September;October;November;December',
@@ -175,7 +180,7 @@
         // Fill the variables
         month = cnow.getMonth();
         year  = cnow.getFullYear();
-        last  = HumanDate.days(month, year);
+        last  = HumanDate.days(month, year, true);
         from  = new Date(year, month, 1).getDay();
         from  = from === 0 ? 7 : from;
         till  = last;
@@ -184,8 +189,8 @@
 
         // Get a first day in range
         if (from !== 1) {
-            from = -from + (7 - from);
-            rest += from;
+            from = -(from - 2);
+            rest = rest + from;
         }
 
         // Get a last day in range
@@ -194,7 +199,7 @@
         }
 
         // Generate an array with the dates in range
-        for (pos = from; pos < till; pos++) {
+        for (pos = from; pos <= till; pos++) {
             data.push(new Date(year, month, pos));
         }
 
@@ -206,12 +211,15 @@
      *
      * @this   {HumanDate}
      * @param  {number}
+     * @param  {undefined|number}
+     * @param  {undefined|boolean}
      * @return {number}
      */
-    HumanDate.days = HumanDate.prototype.days = function(month, year) {
+    HumanDate.days = HumanDate.prototype.days = function(month, year, inner) {
         var
+            s = inner !== undefined ? 1 : 0,
             d = new Date(),
-            m = month !== undefined ? month + 1 : d.getMonth() + 1,
+            m = month !== undefined ? month + s : d.getMonth(),
             y = year  !== undefined ? year : d.getFullYear();
 
         return new Date(
@@ -287,14 +295,16 @@
      */
     HumanDate.human = HumanDate.prototype.human = function(raw, tmpl, part) {
         var
-            tmp  = 0,
-            als  = '',
-            cp   = HumanDate.parse(raw),
-            hmn  = {},
-            dist = null,
-            lang = HumanDate._locales[HumanDate._locales.curr] ?
-                   HumanDate._locales[HumanDate._locales.curr] :
-                   HumanDate._locales[HumanDate._locales.def];
+            chr    = 0,
+            tmp    = 0,
+            als    = '',
+            parsed = '',
+            cp     = HumanDate.parse(raw),
+            hmn    = {},
+            dist   = null,
+            lang   = HumanDate._locales[HumanDate._locales.curr] ?
+                     HumanDate._locales[HumanDate._locales.curr] :
+                     HumanDate._locales[HumanDate._locales.def];
 
         // Basics
         hmn.day     = cp.getDate();
@@ -384,11 +394,19 @@
         }
 
         if (typeof tmpl === 'string') {
-            for (als in hmn) {
-                tmpl = tmpl.replace(als, hmn[als]);
+            tmp = tmpl.length;
+
+            while (chr < tmp) {
+                if (hmn[tmpl[chr]]) {
+                    parsed += hmn[tmpl[chr]];
+                } else {
+                    parsed += tmpl[chr];
+                }
+
+                chr++;
             }
 
-            return tmpl;
+            return parsed;
         }
 
         return hmn;
