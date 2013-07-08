@@ -1,9 +1,9 @@
 /**
  * A wrapper for JavaScript Date object
  *
- * @page    http://github.com/Shushik/b-humandate/
- * @author  Shushik <silkleopard@yandex.ru>
- * @version 1.0
+ * @author   Shushik <silkleopard@yandex.ru>
+ * @version  1.0
+ * @homepage http://github.com/shushik/b-humandate/
  *
  * @static
  * @constructor
@@ -68,7 +68,7 @@
      *
      * @value {string}
      */
-    HumanDate._sep = HumanDate.prototype._sep = ';';
+    HumanDate.sep = HumanDate.prototype.sep = ';';
 
     /**
      * Locale settings
@@ -77,7 +77,7 @@
      *
      * @value {object}
      */
-    HumanDate._locales = HumanDate.prototype._locales = {
+    HumanDate.locales = HumanDate.prototype.locales = {
         en : {
             ampm : {
                 full  : 'ante meridiem;post meridiem',
@@ -161,26 +161,25 @@
      * A kind of calendar math
      *
      * @this   {HumanDate}
-     * @param  {number|string|Date}
+     * @param  {undefined|number|string|Date}
      * @return {object}
      */
     HumanDate.api = HumanDate.prototype.api = function(now) {
         var
-            all   = 42,
-            pos   = 0,
+            day   = 0,
             from  = 0,
             last  = 0,
-            rest  = all,
+            rest  = 42,
             till  = 0,
             year  = 0,
             month = 0,
-            cnow  = HumanDate.parse(now),
-            data  = [];
+            data  = [],
+            cnow  = HumanDate.parse(now)
 
         // Fill the variables
         month = cnow.getMonth();
         year  = cnow.getFullYear();
-        last  = HumanDate.days(month, year, true);
+        last  = HumanDate.days(year, month, true);
         from  = new Date(year, month, 1).getDay();
         from  = from === 0 ? 7 : from;
         till  = last;
@@ -190,7 +189,7 @@
         // Get a first day in range
         if (from !== 1) {
             from = -(from - 2);
-            rest = rest + from;
+            rest = rest + from - 1;
         }
 
         // Get a last day in range
@@ -199,8 +198,8 @@
         }
 
         // Generate an array with the dates in range
-        for (pos = from; pos <= till; pos++) {
-            data.push(new Date(year, month, pos));
+        for (day = from; day <= till; day++) {
+            data.push(new Date(year, month, day));
         }
 
         return data;
@@ -210,7 +209,7 @@
      * Count the number of days in a month
      *
      * @this   {HumanDate}
-     * @param  {number}
+     * @param  {undefined|number}
      * @param  {undefined|number}
      * @param  {undefined|boolean}
      * @return {number}
@@ -233,7 +232,7 @@
      * Check if a year is leap
      *
      * @this   {HumanDate}
-     * @param  {number|string|Date}
+     * @param  {undefined|number|string|Date}
      * @return {boolean}
      */
     HumanDate.leap = HumanDate.prototype.leap = function(year) {
@@ -288,7 +287,7 @@
      * Turn the date object into the human string
      *
      * @this   {HumanDate}
-     * @param  {number|string|Date}
+     * @param  {undefined|number|string|Date}
      * @param  {undefined|string}
      * @param  {undefined|boolean}
      * @return {string|object}
@@ -302,9 +301,9 @@
             cp     = HumanDate.parse(raw),
             hmn    = {},
             dist   = null,
-            lang   = HumanDate._locales[HumanDate._locales.curr] ?
-                     HumanDate._locales[HumanDate._locales.curr] :
-                     HumanDate._locales[HumanDate._locales.def];
+            lang   = HumanDate.locales[HumanDate.locales.curr] ?
+                     HumanDate.locales[HumanDate.locales.curr] :
+                     HumanDate.locales[HumanDate.locales.def];
 
         // Basics
         hmn.day     = cp.getDate();
@@ -331,8 +330,8 @@
             // Week
             tmp = hmn.N - 1;
 
-            hmn.D = lang.weekdays.part.split(HumanDate._sep)[tmp];
-            hmn.l = lang.weekdays.full.split(HumanDate._sep)[tmp];
+            hmn.D = lang.weekdays.part.split(HumanDate.sep)[tmp];
+            hmn.l = lang.weekdays.full.split(HumanDate.sep)[tmp];
             hmn.W = dist.weeks;
 
             // Month
@@ -340,8 +339,8 @@
 
             hmn.n = hmn.month;
             hmn.m = HumanDate.zero(hmn.n);
-            hmn.M = lang.monthes.part.split(HumanDate._sep)[tmp];
-            hmn.F = lang.monthes.full.split(HumanDate._sep)[tmp];
+            hmn.M = lang.monthes.part.split(HumanDate.sep)[tmp];
+            hmn.F = lang.monthes.full.split(HumanDate.sep)[tmp];
             hmn.t = HumanDate.days(hmn.month, hmn.year);
 
             // Year
@@ -359,8 +358,8 @@
 
             // A.M/P.M.
             if (hmn.G <= 12) {
-                hmn.a = lang.ampm.lower.split(HumanDate._sep)[0];
-                hmn.A = lang.ampm.upper.split(HumanDate._sep)[0];
+                hmn.a = lang.ampm.lower.split(HumanDate.sep)[0];
+                hmn.A = lang.ampm.upper.split(HumanDate.sep)[0];
             } else {
                 hmn.a = lang.ampm.lower.split(';')[1];
                 hmn.A = lang.ampm.upper.split(';')[1];
@@ -473,8 +472,8 @@
             cp    = null,
             now   = new Date(),
             preg  = null,
-            rplcs = HumanDate._formats.rplc.split(HumanDate._sep),
-            tmpls = HumanDate._formats.tmpl.split(HumanDate._sep);
+            rplcs = HumanDate._formats.rplc.split(HumanDate.sep),
+            tmpls = HumanDate._formats.tmpl.split(HumanDate.sep);
 
         // Try to read a date with a Date parser
         if (raw instanceof Date) {
@@ -519,7 +518,6 @@
      * Save a date format
      *
      * @this   {HumanDate}
-     * @param  {string}
      * @param  {string}
      * @return {undefined|Array}
      */
@@ -597,20 +595,20 @@
         }
 
         // Save the values
-        HumanDate._formats.tmpl = format + HumanDate._sep + HumanDate._formats.tmpl;
-        HumanDate._formats.rplc = (dt.join(' ') + ' ' + tm.join(':')) + HumanDate._sep + HumanDate._formats.rplc;
+        HumanDate._formats.tmpl = format + HumanDate.sep + HumanDate._formats.tmpl;
+        HumanDate._formats.rplc = (dt.join(' ') + ' ' + tm.join(':')) + HumanDate.sep + HumanDate._formats.rplc;
     }
 
     /**
      * Check if the day is holiday
      *
      * @this   {HumanDate}
-     * @param  {number|string|Date}
+     * @param  {undefined|number|string|Date}
      * @return {boolean}
      */
     HumanDate.holiday = HumanDate.prototype.holiday = function(raw) {
         var
-            lang     = HumanDate._locales.curr,
+            lang     = HumanDate.locales.curr,
             hayfork  = '',
             haystack = '',
             cp       = HumanDate.parse(raw);
@@ -621,9 +619,9 @@
                    HumanDate.zero(cp.getDate());
 
         // Get a holidays list
-        haystack = HumanDate._locales[lang] && HumanDate._locales[lang].holidays ?
-                   HumanDate._locales[lang].holidays.list :
-                   HumanDate._locales[HumanDate._locales.def].holidays.list;
+        haystack = HumanDate.locales[lang] && HumanDate.locales[lang].holidays ?
+                   HumanDate.locales[lang].holidays.list :
+                   HumanDate.locales[HumanDate.locales.def].holidays.list;
 
         //
         if (haystack.indexOf(hayfork) > -1) {
@@ -659,7 +657,7 @@
      * Check if the day is weekend
      *
      * @this   {HumanDate}
-     * @param  {number|string|Date}
+     * @param  {undefined|number|string|Date}
      * @return {boolean}
      */
     HumanDate.weekend = HumanDate.prototype.weekend = function(raw) {
@@ -733,7 +731,7 @@
      *
      * @this   {Cal}
      * @param  {string}
-     * @param  {undefined|string|Array}
+     * @param  {string|Array}
      * @return {undefined|Array}
      */
     HumanDate.holidays = HumanDate.prototype.holidays = function(lang, items) {
@@ -746,12 +744,12 @@
 
         if (items !== undefined) {
             //
-            if (!HumanDate._locales[lang]) {
+            if (!HumanDate.locales[lang]) {
                 HumanDate.language(lang);
             }
 
             //
-            HumanDate._locales[lang].holidays = {
+            HumanDate.locales[lang].holidays = {
                 list : '',
                 from : null,
                 till : null
@@ -759,13 +757,13 @@
 
             //
             if (items instanceof Array) {
-                HumanDate._locales[lang].holidays.list = items.join(HumanDate._sep);
+                HumanDate.locales[lang].holidays.list = items.join(HumanDate.sep);
             } else if (typeof items === 'string') {
-                HumanDate._locales[lang].holidays.list = items;
+                HumanDate.locales[lang].holidays.list = items;
             }
         } else {
-            if (HumanDate._locales[lang] && HumanDate._locales[lang].holidays) {
-                return HumanDate._locales[lang].holidays.split(HumanDate._sep);
+            if (HumanDate.locales[lang] && HumanDate.locales[lang].holidays) {
+                return HumanDate.locales[lang].holidays.split(HumanDate.sep);
             } else {
                 return null;
             }
@@ -783,41 +781,41 @@
      */
     HumanDate.language = HumanDate.prototype.language = function(lang, items) {
         var
-            als  = '',
-            sals = '',
-            def  = HumanDate._locales[HumanDate._locales.def];
+            al0 = '',
+            al1 = '',
+            def = HumanDate.locales[HumanDate.locales.def];
 
         if (items !== undefined) {
-            def = HumanDate._locales[HumanDate._locales.def];
+            def = HumanDate.locales[HumanDate.locales.def];
 
             // Create the parent object if not exists
-            if (!HumanDate._locales[lang]) {
-                HumanDate._locales[lang] = {};
+            if (!HumanDate.locales[lang]) {
+                HumanDate.locales[lang] = {};
             }
 
             //
-            for (als in def) {
-                HumanDate._locales[lang][als] = {};
+            for (al0 in def) {
+                HumanDate.locales[lang][al0] = {};
 
                 //
-                for (sals in def[als]) {
-                    if (items && items[als] && items[als][sals]) {
-                        if (items[als][sals] instanceof Array) {
-                            HumanDate._locales[lang][als][sals] = items[als][sals].join(HumanDate._sep);
+                for (al1 in def[al0]) {
+                    if (items && items[als] && items[als][al1]) {
+                        if (items[al0][al1] instanceof Array) {
+                            HumanDate.locales[lang][al0][al1] = items[al0][al1].join(HumanDate.sep);
                         } else {
-                            HumanDate._locales[lang][als][sals] = items[als][sals];
+                            HumanDate.locales[lang][al0][al1] = items[al0][al1];
                         }
                     } else {
-                        HumanDate._locales[lang][als][sals] = def[als][sals];
+                        HumanDate.locales[lang][al0][al1] = def[al0][al1];
                     }
                 }
             }
         }
 
         // Switch to a given language
-        if (HumanDate._locales[lang]) {
-            HumanDate._locales.curr = lang;
+        if (HumanDate.locales[lang]) {
+            HumanDate.locales.curr = lang;
         } else {
-            HumanDate._locales.curr = HumanDate._locales.def;
+            HumanDate.locales.curr = HumanDate.locales.def;
         }
     }
