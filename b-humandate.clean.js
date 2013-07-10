@@ -14,7 +14,7 @@
 ;function
     HumanDate(tmpl, raw) {
         return HumanDate.human(HumanDate.parse(raw), tmpl);
-    }; HumanDate.prototype = {};
+    };
 
     /**
      * The current date
@@ -458,13 +458,16 @@
      * Parse a date
      *
      * @this   {HumanDate}
-     * @param  {number|string|date}
-     * @return {Date}
+     * @param  {number|string|Date}
+     * @return {Date|null}
      */
     HumanDate.parse = HumanDate.prototype.parse = function(raw) {
-        // Don`t parse, just clone
         if (raw instanceof Date) {
+            // Don`t parse, just clone
             return new Date(raw);
+        } else if (raw === undefined) {
+            // Don`t parse, return the current day
+            return HumanDate._now;
         }
 
         var
@@ -514,7 +517,7 @@
             }
         }
 
-        return HumanDate._now;
+        return null;
     }
 
     /**
@@ -641,15 +644,19 @@
      * @param  {number|string|Date}
      * @param  {number|string|Date}
      * @param  {number|string|Date}
+     * @param  {undefined|boolean}
      * @return {boolean}
      */
-    HumanDate.inside = HumanDate.prototype.inside = function(now, min, max) {
+    HumanDate.inside = HumanDate.prototype.inside = function(now, min, max, inc) {
         var
             cmax = HumanDate.parse(max),
             cmin = HumanDate.parse(min),
             cnow = HumanDate.parse(now);
 
-        if (cnow > cmin && cnow < cmax) {
+        if (
+            inc && cnow >= cmin && cnow <= cmax ||
+            cnow > cmin && cnow < cmax
+        ) {
             return true;
         }
 
