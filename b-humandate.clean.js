@@ -462,6 +462,11 @@
      * @return {Date}
      */
     HumanDate.parse = HumanDate.prototype.parse = function(raw) {
+        // Don`t parse, just clone
+        if (raw instanceof Date) {
+            return new Date(raw);
+        }
+
         var
             day   = 0,
             end   = 0,
@@ -476,9 +481,7 @@
             tmpls = HumanDate._formats.tmpl.split(HumanDate.sep);
 
         // Try to read a date with a Date parser
-        if (raw instanceof Date) {
-            return new Date(raw);
-        } else if (type === 'number') {
+        if (type === 'number') {
             return new Date(raw);
         } else if (type === 'string') {
             cp = new Date(raw);
@@ -799,7 +802,7 @@
 
                 //
                 for (al1 in def[al0]) {
-                    if (items && items[als] && items[als][al1]) {
+                    if (items && items[al0] && items[al0][al1]) {
                         if (items[al0][al1] instanceof Array) {
                             HumanDate.locales[lang][al0][al1] = items[al0][al1].join(HumanDate.sep);
                         } else {
