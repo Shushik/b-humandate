@@ -614,27 +614,31 @@
      */
     HumanDate.holiday = HumanDate.prototype.holiday = function(raw) {
         var
-            lang     = HumanDate.locales.curr,
             hayfork  = '',
             haystack = '',
-            cp       = HumanDate.parse(raw);
+            craw     = null,
+            holidays = null;
 
-        // Get a date string
-        hayfork  = cp.getFullYear() + '-' +
-                   HumanDate.zero(cp.getMonth() + 1) + '-' +
-                   HumanDate.zero(cp.getDate());
+        if (HumanDate.locales[HumanDate.locales.curr].holidays) {
+            craw     = HumanDate.parse(raw);
+            holidays = HumanDate.locales[HumanDate.locales.curr].holidays;
+            hayfork  = craw.getFullYear() + '-' +
+                       HumanDate.zero(craw.getMonth() + 1) + '-' +
+                       HumanDate.zero(craw.getDate());
+            haystack = holidays.list;
 
-        // Get a holidays list
-        haystack = HumanDate.locales[lang] && HumanDate.locales[lang].holidays ?
-                   HumanDate.locales[lang].holidays.list :
-                   HumanDate.locales[HumanDate.locales.def].holidays.list;
-
-        //
-        if (haystack.indexOf(hayfork) > -1) {
-            return true;
+            if (HumanDate.inside(craw, holidays.from, holidays.till, true)) {
+                if (haystack.indexOf(hayfork) > -1) {
+                    return true;
+                }
+            } else {
+                return HumanDate.weekend(raw);
+            }
+        } else {
+            return HumanDate.weekend(raw);
         }
 
-        return HumanDate.weekend(raw);
+        return false;
     };
 
     /**
@@ -746,31 +750,46 @@
      */
     HumanDate.holidays = HumanDate.prototype.holidays = function(lang, items) {
         var
-            end   = 0,
-            pos   = 0,
-            from  = '',
-            till  = '',
-            alias = '';
+            ln0 = 0,
+            raw = null;
 
         if (items !== undefined) {
-            //
+            raw = typeof items == 'string' ?
+                  items.split(HumanDate.sep) :
+                  items;
+            ln0 = raw.length;
+
+            // Create the language object if not exists
+            // or just switch the language to neededs
             if (!HumanDate.locales[lang]) {
+                HumanDate.language(lang, {});
+            } else {
                 HumanDate.language(lang);
             }
 
-            //
-            HumanDate.locales[lang].holidays = {
-                list : '',
-                from : null,
-                till : null
-            };
-
-            //
-            if (items instanceof Array) {
-                HumanDate.locales[lang].holidays.list = items.join(HumanDate.sep);
-            } else if (typeof items === 'string') {
-                HumanDate.locales[lang].holidays.list = items;
+            if (ln0) {
+                from = ln0 ? HumanDate.parse(raw[0]) : null;
+                till = ln0 ? HumanDate.parse(raw[ln0 - 1]) : null;
             }
+
+            // Save the holidays properties into current locale
+            HumanDate.locales[HumanDate.locales.curr].holidays = {
+                from : from ?
+                       new Date(
+                           from.getFullYear(),
+                           from.getMonth(),
+                           from.getDate()
+                       ) :
+                       from,
+                list : raw.join(HumanDate.sep),
+                till : till ?
+                       new Date(
+                           till.getFullYear(),
+                           till.getMonth(),
+                           till.getDate()
+                       ) :
+                       till
+            };
         } else {
             if (HumanDate.locales[lang] && HumanDate.locales[lang].holidays) {
                 return HumanDate.locales[lang].holidays.split(HumanDate.sep);
@@ -786,10 +805,11 @@
      *
      * @this   {Cal}
      * @param  {string}
-     * @param  {object}
+     * @param  {undefined|object}
+     * @param  {undefined|boolean}
      * @return {undefined}
      */
-    HumanDate.language = HumanDate.prototype.language = function(lang, items) {
+    HumanDate.language = HumanDate.prototype.language = function(lang, items, rewrite) {
         var
             al0 = '',
             al1 = '',
@@ -798,25 +818,40 @@
         if (items !== undefined) {
             def = HumanDate.locales[HumanDate.locales.def];
 
-            // Create the parent object if not exists
+            // Create the locale object if not exists
             if (!HumanDate.locales[lang]) {
                 HumanDate.locales[lang] = {};
             }
 
-            //
+            // 
             for (al0 in def) {
-                HumanDate.locales[lang][al0] = {};
+                if (al0 == 'holidays') {
+                    // Save the holidays
+                    HumanDate.holidays(lang, items[al0]);
+                } else {
+                    // Create the locale setting object if not exists
+                    if (!HumanDate.locales[lang][al0]) {
+                        HumanDate.locales[lang][al0] = {};
+                    }
 
-                //
-                for (al1 in def[al0]) {
-                    if (items && items[al0] && items[al0][al1]) {
-                        if (items[al0][al1] instanceof Array) {
-                            HumanDate.locales[lang][al0][al1] = items[al0][al1].join(HumanDate.sep);
-                        } else {
-                            HumanDate.locales[lang][al0][al1] = items[al0][al1];
+                    for (al1 in def[al0]) {
+                        if (
+                            !HumanDate.locales[lang][al0][al1] ||
+                            rewrite === true
+                        ) {
+                            // Take a locale setting from a given object
+                            if (items[al0] && items[al0][al1]) {
+                                if (items[al0][al1] instanceof Array) {
+                                    HumanDate.locales[lang][al0][al1] = items[al0][al1].
+                                                                        join(HumanDate.sep);
+                                } else {
+                                    HumanDate.locales[lang][al0][al1] = items[al0][al1];
+                                }
+                            } else {
+                                // Take a locale setting from a default object
+                                HumanDate.locales[lang][al0][al1] = def[al0][al1];
+                            }
                         }
-                    } else {
-                        HumanDate.locales[lang][al0][al1] = def[al0][al1];
                     }
                 }
             }
